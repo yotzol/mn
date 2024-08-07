@@ -18,30 +18,26 @@ def align(code: str):
     selected_lines: list[int] = []
 
     for i, line in enumerate(lines):
+        # decls
         m = DECL_EXPR.match(line)
         if m:
             if m.group("colon"):
                 colon_col     = m.start("colon")
                 max_colon_col = max(max_colon_col, colon_col)
                 selected_lines.append(i)
-
             if m.group("equal"):
                 equal_col     = m.start("equal")
                 max_equal_col = max(max_equal_col, equal_col)
                 selected_lines.append(i)
-
             last_decl_line = i
 
         if last_decl_line - i > 1 or i == len(lines) - 1:
             for j in selected_lines:
-                sel       = lines[j]
-
+                sel = lines[j]
                 if max_colon_col > 0:
                     colon_col = sel.find(":")
-
                     if colon_col == -1: 
                         colon_col = sel.find("=")
-
                     offset    = max_colon_col - colon_col
                     sel       = sel[:colon_col] + " " * offset + sel[colon_col:]
 
@@ -56,16 +52,15 @@ def align(code: str):
             max_colon_col = 0
             max_equal_col = 0
 
-
+        # assigns
         m = ASSIGN_EXPR.match(line)
-
         if m:
             equal_col        = m.start("equal")
             last_assign_line = i
             max_equal_col    = max(max_equal_col, equal_col)
             selected_lines.append(i)
 
-        if last_assign_line - i > 1:
+        if last_assign_line - i > 1 or i == len(lines) - 1:
             for j in selected_lines:
                 sel       = lines[j]
                 equal_col = sel.find("=")
@@ -76,6 +71,7 @@ def align(code: str):
             selected_lines.clear()
             max_equal_col = 0
 
+        # objs
         m = OBJ_EXPR.match(line)
         if m:
             colon_col        = m.start("colon")
@@ -83,7 +79,7 @@ def align(code: str):
             max_colon_col    = max(max_colon_col, colon_col)
             selected_lines.append(i)
 
-        if last_record_line - i > 1:
+        if last_record_line - i > 1 or i == len(lines) - 1:
             for j in selected_lines:
                 sel       = lines[j]
                 colon_col = sel.find(":")
